@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Việc cần làm</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Việc cần làm</h1>
+
+    <form id="task-form">
+      <input id="task-input" type="text" placeholder="Nhập việc cần làm..." required maxlength="200">
+      <button type="submit">Thêm</button>
+    </form>
+
+    <ul id="task-list"></ul>
+    <p id="empty-msg" hidden>Chưa có việc nào. Hãy thêm việc đầu tiên!</p>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
