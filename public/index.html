@@ -8,16 +8,41 @@
 </head>
 <body>
   <main class="container">
-    <h1>Việc cần làm</h1>
 
-    <form id="task-form">
-      <input id="task-input" type="text" placeholder="Nhập việc cần làm..." required maxlength="200">
-      <button type="submit">Thêm</button>
-    </form>
+    <!-- Phần đăng nhập / đăng ký -->
+    <section id="auth-section">
+      <h1>Việc cần làm</h1>
+      <form id="auth-form">
+        <input id="email" type="email" placeholder="Email" required autocomplete="email">
+        <input id="password" type="password" placeholder="Mật khẩu (ít nhất 6 ký tự)" required minlength="6" autocomplete="current-password">
+        <div class="auth-buttons">
+          <button type="submit">Đăng nhập</button>
+          <button type="button" id="signup-btn" class="secondary">Đăng ký</button>
+        </div>
+        <p id="auth-msg"></p>
+      </form>
+    </section>
 
-    <ul id="task-list"></ul>
-    <p id="empty-msg" hidden>Chưa có việc nào. Hãy thêm việc đầu tiên!</p>
+    <!-- Phần ứng dụng (chỉ hiện khi đã đăng nhập) -->
+    <section id="app-section" hidden>
+      <div class="topbar">
+        <h1>Việc cần làm</h1>
+        <button id="logout-btn" class="secondary">Đăng xuất</button>
+      </div>
+      <p id="user-email"></p>
+
+      <form id="task-form">
+        <input id="task-input" type="text" placeholder="Nhập việc cần làm..." required maxlength="200">
+        <button type="submit">Thêm</button>
+      </form>
+
+      <ul id="task-list"></ul>
+      <p id="empty-msg" hidden>Chưa có việc nào. Hãy thêm việc đầu tiên!</p>
+    </section>
+
   </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>
 </body>
 </html>

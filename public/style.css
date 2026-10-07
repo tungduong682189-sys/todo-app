@@ -54,3 +54,23 @@ li.done span { text-decoration: line-through; color: #9ca3af; }
 
 li .delete { background: #ef4444; padding: 6px 10px; font-size: 14px; }
 li .delete:hover { background: #dc2626; }
+
+[hidden] { display: none !important; }
+
+#auth-form { display: flex; flex-direction: column; gap: 10px; }
+#auth-form input {
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 16px;
+}
+.auth-buttons { display: flex; gap: 8px; }
+.auth-buttons button { flex: 1; }
+#auth-msg { margin: 0; font-size: 14px; }
+
+.secondary { background: #6b7280; }
+.secondary:hover { background: #4b5563; }
+
+.topbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.topbar h1 { margin: 0; }
+#user-email { color: #6b7280; font-size: 14px; overflow-wrap: anywhere; margin: 6px 0 16px; }
