@@ -10,11 +10,16 @@ const logoutBtn = document.getElementById('logout-btn');
 
 const form = document.getElementById('task-form');
 const input = document.getElementById('task-input');
+const dueInput = document.getElementById('due-input');
+const filterBar = document.getElementById('filters');
+const countEl = document.getElementById('count');
 const list = document.getElementById('task-list');
 const emptyMsg = document.getElementById('empty-msg');
 
-let sb = null;      // kết nối Supabase
-let token = null;   // token đăng nhập hiện tại
+let sb = null;       // kết nối Supabase
+let token = null;    // token đăng nhập hiện tại
+let allTasks = [];   // toàn bộ việc của người dùng
+let filter = 'all';  // bộ lọc đang chọn
 
 function showMsg(text, isError = true) {
   authMsg.textContent = text;
@@ -29,7 +34,18 @@ function translateError(message) {
   return message;
 }
 
-// Hàm gọi API, tự gắn token vào mỗi yêu cầu
+function todayStr() {
+  const d = new Date();
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+function formatDate(s) {
+  const [y, m, d] = s.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+// Gọi API, tự gắn token vào mỗi yêu cầu
 async function api(path, options = {}) {
   const res = await fetch(path, {
     ...options,
@@ -48,45 +64,127 @@ async function api(path, options = {}) {
 async function loadTasks() {
   try {
     const res = await api('/api/tasks');
-    const tasks = await res.json();
-    render(tasks);
+    if (!res.ok) throw new Error('Không tải được danh sách');
+    allTasks = await res.json();
+    render();
   } catch (err) {
     console.error(err);
   }
 }
 
-function render(tasks) {
+function render() {
+  const remaining = allTasks.filter(t => !t.done).length;
+  countEl.textContent = allTasks.length ? `Còn ${remaining} việc chưa xong` : '';
+
+  const tasks = allTasks.filter(t =>
+    filter === 'all' ? true : filter === 'active' ? !t.done : t.done
+  );
+
   list.innerHTML = '';
   emptyMsg.hidden = tasks.length > 0;
+  emptyMsg.textContent = allTasks.length === 0
+    ? 'Chưa có việc nào. Hãy thêm việc đầu tiên!'
+    : 'Không có việc nào trong mục này.';
 
-  tasks.forEach(task => {
-    const li = document.createElement('li');
-    if (task.done) li.classList.add('done');
-
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.checked = task.done;
-    checkbox.addEventListener('change', async () => {
-      await api(`/api/tasks/${task.id}`, { method: 'PATCH' });
-      loadTasks();
-    });
-
-    const span = document.createElement('span');
-    span.textContent = task.title;
-
-    const del = document.createElement('button');
-    del.textContent = 'Xóa';
-    del.className = 'delete';
-    del.addEventListener('click', async () => {
-      await api(`/api/tasks/${task.id}`, { method: 'DELETE' });
-      loadTasks();
-    });
-
-    li.append(checkbox, span, del);
-    list.appendChild(li);
-  });
+  tasks.forEach(task => list.appendChild(taskItem(task)));
 }
 
+function taskItem(task) {
+  const li = document.createElement('li');
+  if (task.done) li.classList.add('done');
+
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.checked = task.done;
+  checkbox.addEventListener('change', async () => {
+    await api(`/api/tasks/${task.id}`, { method: 'PATCH' });
+    loadTasks();
+  });
+
+  const main = document.createElement('div');
+  main.className = 'task-main';
+
+  const span = document.createElement('span');
+  span.textContent = task.title;
+  main.appendChild(span);
+
+  if (task.due_date) {
+    const due = document.createElement('small');
+    due.className = 'due';
+    due.textContent = 'Hạn: ' + formatDate(task.due_date);
+    if (!task.done && task.due_date < todayStr()) {
+      due.classList.add('overdue');
+      due.textContent += ' (quá hạn)';
+    }
+    main.appendChild(due);
+  }
+
+  const edit = document.createElement('button');
+  edit.textContent = 'Sửa';
+  edit.className = 'edit';
+  edit.addEventListener('click', () => startEdit(li, task));
+
+  const del = document.createElement('button');
+  del.textContent = 'Xóa';
+  del.className = 'delete';
+  del.addEventListener('click', async () => {
+    await api(`/api/tasks/${task.id}`, { method: 'DELETE' });
+    loadTasks();
+  });
+
+  li.append(checkbox, main, edit, del);
+  return li;
+}
+
+function startEdit(li, task) {
+  li.innerHTML = '';
+  li.classList.remove('done');
+
+  const row = document.createElement('div');
+  row.className = 'edit-row';
+
+  const titleInput = document.createElement('input');
+  titleInput.type = 'text';
+  titleInput.value = task.title;
+  titleInput.maxLength = 200;
+
+  const dateInput = document.createElement('input');
+  dateInput.type = 'date';
+  dateInput.value = task.due_date || '';
+
+  const save = document.createElement('button');
+  save.textContent = 'Lưu';
+
+  const cancel = document.createElement('button');
+  cancel.textContent = 'Hủy';
+  cancel.className = 'secondary';
+
+  async function doSave() {
+    const title = titleInput.value.trim();
+    if (!title) {
+      titleInput.focus();
+      return;
+    }
+    await api(`/api/tasks/${task.id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ title, due_date: dateInput.value || null })
+    });
+    loadTasks();
+  }
+
+  save.addEventListener('click', doSave);
+  cancel.addEventListener('click', render);
+  titleInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') doSave();
+    if (e.key === 'Escape') render();
+  });
+
+  row.append(titleInput, dateInput, save, cancel);
+  li.appendChild(row);
+  titleInput.focus();
+}
+
+// Thêm việc
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const title = input.value.trim();
@@ -94,11 +192,23 @@ form.addEventListener('submit', async (e) => {
 
   await api('/api/tasks', {
     method: 'POST',
-    body: JSON.stringify({ title })
+    body: JSON.stringify({ title, due_date: dueInput.value || null })
   });
 
   input.value = '';
+  dueInput.value = '';
   loadTasks();
+});
+
+// Bộ lọc
+filterBar.addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-filter]');
+  if (!btn) return;
+  filter = btn.dataset.filter;
+  filterBar.querySelectorAll('.filter').forEach(b =>
+    b.classList.toggle('active', b === btn)
+  );
+  render();
 });
 
 // Đăng nhập
@@ -129,7 +239,7 @@ signupBtn.addEventListener('click', async () => {
 // Đăng xuất
 logoutBtn.addEventListener('click', () => sb.auth.signOut());
 
-// Khởi động: lấy cấu hình, kết nối Supabase, theo dõi trạng thái đăng nhập
+// Khởi động
 async function init() {
   const res = await fetch('/api/config');
   const cfg = await res.json();
@@ -145,6 +255,7 @@ async function init() {
     } else {
       authSection.hidden = false;
       appSection.hidden = true;
+      allTasks = [];
       list.innerHTML = '';
     }
   });

@@ -74,3 +74,37 @@ li .delete:hover { background: #dc2626; }
 .topbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .topbar h1 { margin: 0; }
 #user-email { color: #6b7280; font-size: 14px; overflow-wrap: anywhere; margin: 6px 0 16px; }
+
+#task-form { flex-wrap: wrap; }
+#task-form #task-input { min-width: 180px; }
+#due-input {
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+#filters { display: flex; gap: 6px; margin-bottom: 8px; }
+.filter { background: #e5e7eb; color: #374151; padding: 6px 12px; font-size: 14px; }
+.filter:hover { background: #d1d5db; }
+.filter.active { background: #2563eb; color: white; }
+#count { color: #6b7280; font-size: 14px; margin: 0 0 8px; }
+
+.task-main { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.due { display: block; color: #6b7280; font-size: 13px; }
+.due.overdue { color: #dc2626; font-weight: 600; }
+li.done .due { color: #9ca3af; font-weight: normal; }
+
+li .edit { background: #6b7280; padding: 6px 10px; font-size: 14px; }
+li .edit:hover { background: #4b5563; }
+
+.edit-row { display: flex; gap: 6px; flex-wrap: wrap; width: 100%; }
+.edit-row input[type="text"],
+.edit-row input[type="date"] {
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 15px;
+}
+.edit-row input[type="text"] { flex: 1; min-width: 160px; }
+.edit-row button { padding: 8px 12px; font-size: 14px; }
