@@ -262,3 +262,23 @@ async function init() {
 }
 
 init();
+
+// Chế độ sáng / tối
+const themeBtn = document.getElementById('theme-btn');
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  themeBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  try { localStorage.setItem('theme', theme); } catch {}
+}
+
+let savedTheme = null;
+try { savedTheme = localStorage.getItem('theme'); } catch {}
+applyTheme(
+  savedTheme ||
+  (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+);
+
+themeBtn.addEventListener('click', () => {
+  applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+});
