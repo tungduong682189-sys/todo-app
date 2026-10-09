@@ -25,12 +25,29 @@
     </section>
 
     <!-- Phần ứng dụng (chỉ hiện khi đã đăng nhập) -->
-      <section id="app-section" hidden>
-        <div class="topbar">
-          <h1>Việc cần làm</h1>
-          <button id="logout-btn" class="secondary">Đăng xuất</button>
+    <section id="app-section" hidden>
+      <div class="topbar">
+        <h1>Việc cần làm</h1>
+        <button id="logout-btn" class="secondary">Đăng xuất</button>
+      </div>
+      <p id="user-email"></p>
+
+      <!-- Màn hình 1: danh sách thư mục -->
+      <div id="folders-view">
+        <form id="folder-form">
+          <input id="folder-input" type="text" placeholder="Tên thư mục (ví dụ: Ngày 18)" required maxlength="100">
+          <button type="submit">Tạo thư mục</button>
+        </form>
+        <ul id="folder-list"></ul>
+        <p id="folder-empty" hidden>Chưa có thư mục nào. Hãy tạo thư mục đầu tiên!</p>
+      </div>
+
+      <!-- Màn hình 2: việc bên trong một thư mục -->
+      <div id="tasks-view" hidden>
+        <div class="folder-head">
+          <button id="back-btn" type="button" class="secondary">← Thư mục</button>
+          <h2 id="folder-title"></h2>
         </div>
-        <p id="user-email"></p>
 
         <form id="task-form">
           <input id="task-input" type="text" placeholder="Nhập việc cần làm..." required maxlength="200">
@@ -47,7 +64,8 @@
 
         <ul id="task-list"></ul>
         <p id="empty-msg" hidden>Chưa có việc nào. Hãy thêm việc đầu tiên!</p>
-      </section>
+      </div>
+    </section>
 
   </main>
 

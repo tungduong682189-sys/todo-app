@@ -8,6 +8,16 @@ const authMsg = document.getElementById('auth-msg');
 const userEmail = document.getElementById('user-email');
 const logoutBtn = document.getElementById('logout-btn');
 
+const foldersView = document.getElementById('folders-view');
+const folderForm = document.getElementById('folder-form');
+const folderInput = document.getElementById('folder-input');
+const folderList = document.getElementById('folder-list');
+const folderEmpty = document.getElementById('folder-empty');
+
+const tasksView = document.getElementById('tasks-view');
+const backBtn = document.getElementById('back-btn');
+const folderTitle = document.getElementById('folder-title');
+
 const form = document.getElementById('task-form');
 const input = document.getElementById('task-input');
 const dueInput = document.getElementById('due-input');
@@ -16,10 +26,12 @@ const countEl = document.getElementById('count');
 const list = document.getElementById('task-list');
 const emptyMsg = document.getElementById('empty-msg');
 
-let sb = null;       // kết nối Supabase
-let token = null;    // token đăng nhập hiện tại
-let allTasks = [];   // toàn bộ việc của người dùng
-let filter = 'all';  // bộ lọc đang chọn
+let sb = null;             // kết nối Supabase
+let token = null;          // token đăng nhập hiện tại
+let folders = [];          // danh sách thư mục
+let currentFolder = null;  // thư mục đang mở (null = đang ở màn hình thư mục)
+let allTasks = [];         // việc trong thư mục đang mở
+let filter = 'all';        // bộ lọc đang chọn
 
 function showMsg(text, isError = true) {
   authMsg.textContent = text;
@@ -61,11 +73,137 @@ async function api(path, options = {}) {
   return res;
 }
 
-async function loadTasks() {
+/* ================= THƯ MỤC ================= */
+
+async function loadFolders() {
   try {
-    const res = await api('/api/tasks');
+    const res = await api('/api/folders');
+    if (!res.ok) throw new Error('Không tải được thư mục');
+    folders = await res.json();
+    renderFolders();
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+function renderFolders() {
+  folderList.innerHTML = '';
+  folderEmpty.hidden = folders.length > 0;
+
+  folders.forEach(folder => {
+    const li = document.createElement('li');
+
+    const open = document.createElement('button');
+    open.type = 'button';
+    open.className = 'folder-open';
+
+    const icon = document.createElement('span');
+    icon.className = 'folder-icon';
+    icon.textContent = '📁';
+
+    const name = document.createElement('span');
+    name.textContent = folder.name;
+
+    const count = document.createElement('span');
+    count.className = 'folder-count';
+    count.textContent = folder.total === 0
+      ? 'Trống'
+      : `${folder.open_count}/${folder.total} chưa xong`;
+
+    open.append(icon, name, count);
+    open.addEventListener('click', () => openFolder(folder));
+
+    const rename = document.createElement('button');
+    rename.textContent = 'Sửa';
+    rename.className = 'edit';
+    rename.addEventListener('click', () => renameFolder(folder));
+
+    const del = document.createElement('button');
+    del.textContent = 'Xóa';
+    del.className = 'delete';
+    del.addEventListener('click', () => deleteFolder(folder));
+
+    li.append(open, rename, del);
+    folderList.appendChild(li);
+  });
+}
+
+folderForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = folderInput.value.trim();
+  if (!name) return;
+
+  const res = await api('/api/folders', {
+    method: 'POST',
+    body: JSON.stringify({ name })
+  });
+  if (!res.ok) return alert('Không tạo được thư mục');
+
+  folderInput.value = '';
+  loadFolders();
+});
+
+async function renameFolder(folder) {
+  const name = prompt('Tên mới cho thư mục:', folder.name);
+  if (name === null) return;
+  const trimmed = name.trim();
+  if (!trimmed) return alert('Tên thư mục không được để trống');
+
+  const res = await api(`/api/folders/${folder.id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ name: trimmed })
+  });
+  if (!res.ok) return alert('Không đổi được tên');
+  loadFolders();
+}
+
+async function deleteFolder(folder) {
+  const extra = folder.total > 0
+    ? `\n\n${folder.total} việc bên trong cũng sẽ bị xóa.`
+    : '';
+  if (!confirm(`Xóa thư mục "${folder.name}"?${extra}`)) return;
+
+  const res = await api(`/api/folders/${folder.id}`, { method: 'DELETE' });
+  if (!res.ok) return alert('Không xóa được thư mục');
+  loadFolders();
+}
+
+function openFolder(folder) {
+  currentFolder = folder;
+  filter = 'all';
+  filterBar.querySelectorAll('.filter').forEach(b =>
+    b.classList.toggle('active', b.dataset.filter === 'all')
+  );
+  allTasks = [];
+  folderTitle.textContent = folder.name;
+  foldersView.hidden = true;
+  tasksView.hidden = false;
+  render();
+  loadTasks();
+}
+
+function closeFolder() {
+  currentFolder = null;
+  allTasks = [];
+  tasksView.hidden = true;
+  foldersView.hidden = false;
+  loadFolders();
+}
+
+backBtn.addEventListener('click', closeFolder);
+
+/* ================= VIỆC ================= */
+
+async function loadTasks() {
+  if (!currentFolder) return;
+  const folderId = currentFolder.id;
+  try {
+    const res = await api(`/api/tasks?folder_id=${folderId}`);
     if (!res.ok) throw new Error('Không tải được danh sách');
-    allTasks = await res.json();
+    const tasks = await res.json();
+    // Bỏ qua kết quả nếu người dùng đã chuyển sang thư mục khác
+    if (!currentFolder || currentFolder.id !== folderId) return;
+    allTasks = tasks;
     render();
   } catch (err) {
     console.error(err);
@@ -83,7 +221,7 @@ function render() {
   list.innerHTML = '';
   emptyMsg.hidden = tasks.length > 0;
   emptyMsg.textContent = allTasks.length === 0
-    ? 'Chưa có việc nào. Hãy thêm việc đầu tiên!'
+    ? 'Thư mục này chưa có việc nào. Hãy thêm việc đầu tiên!'
     : 'Không có việc nào trong mục này.';
 
   tasks.forEach(task => list.appendChild(taskItem(task)));
@@ -184,16 +322,21 @@ function startEdit(li, task) {
   titleInput.focus();
 }
 
-// Thêm việc
+// Thêm việc vào thư mục đang mở
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const title = input.value.trim();
-  if (!title) return;
+  if (!title || !currentFolder) return;
 
-  await api('/api/tasks', {
+  const res = await api('/api/tasks', {
     method: 'POST',
-    body: JSON.stringify({ title, due_date: dueInput.value || null })
+    body: JSON.stringify({
+      title,
+      due_date: dueInput.value || null,
+      folder_id: currentFolder.id
+    })
   });
+  if (!res.ok) return alert('Không thêm được việc');
 
   input.value = '';
   dueInput.value = '';
@@ -211,7 +354,8 @@ filterBar.addEventListener('click', (e) => {
   render();
 });
 
-// Đăng nhập
+/* ================= ĐĂNG NHẬP ================= */
+
 authForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   showMsg('');
@@ -222,7 +366,6 @@ authForm.addEventListener('submit', async (e) => {
   if (error) showMsg(translateError(error.message));
 });
 
-// Đăng ký
 signupBtn.addEventListener('click', async () => {
   if (!authForm.reportValidity()) return;
   showMsg('');
@@ -236,10 +379,8 @@ signupBtn.addEventListener('click', async () => {
   }
 });
 
-// Đăng xuất
 logoutBtn.addEventListener('click', () => sb.auth.signOut());
 
-// Khởi động
 async function init() {
   const res = await fetch('/api/config');
   const cfg = await res.json();
@@ -251,19 +392,27 @@ async function init() {
       userEmail.textContent = session.user.email;
       authSection.hidden = true;
       appSection.hidden = false;
-      if (event !== 'TOKEN_REFRESHED') setTimeout(loadTasks, 0);
+      if (event !== 'TOKEN_REFRESHED') {
+        setTimeout(() => (currentFolder ? loadTasks() : loadFolders()), 0);
+      }
     } else {
       authSection.hidden = false;
       appSection.hidden = true;
+      currentFolder = null;
+      folders = [];
       allTasks = [];
+      folderList.innerHTML = '';
       list.innerHTML = '';
+      tasksView.hidden = true;
+      foldersView.hidden = false;
     }
   });
 }
 
 init();
 
-// Chế độ sáng / tối
+/* ================= CHẾ ĐỘ SÁNG / TỐI ================= */
+
 const themeBtn = document.getElementById('theme-btn');
 
 function applyTheme(theme) {

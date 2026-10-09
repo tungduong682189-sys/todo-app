@@ -205,3 +205,35 @@ li .delete:hover { background: var(--danger-hover); }
   li { flex-wrap: wrap; }
   li .edit, li .delete { padding: 8px 12px; }
 }
+
+/* Thư mục */
+#folder-form { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+#folder-input { flex: 1; min-width: 180px; }
+
+.folder-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  background: transparent;
+  color: var(--text);
+  padding: 6px 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.folder-open:hover { background: transparent; color: var(--primary); }
+.folder-icon { font-size: 20px; }
+.folder-count {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: normal;
+  white-space: nowrap;
+}
+
+#folder-empty { color: var(--muted); text-align: center; padding: 16px 0; }
+
+.folder-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.folder-head h2 { margin: 0; font-size: 20px; overflow-wrap: anywhere; }
+.folder-head button { padding: 6px 12px; font-size: 14px; white-space: nowrap; }
