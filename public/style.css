@@ -237,3 +237,79 @@ li .delete:hover { background: var(--danger-hover); }
 .folder-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 .folder-head h2 { margin: 0; font-size: 20px; overflow-wrap: anywhere; }
 .folder-head button { padding: 6px 12px; font-size: 14px; white-space: nowrap; }
+
+/* ===== Giao diện hồng (chế độ sáng) ===== */
+
+.decor, .chick { display: none; }
+
+.container { position: relative; z-index: 1; }
+#theme-btn { z-index: 5; }
+
+:root[data-theme="light"] {
+  --bg: #FBD5E3;
+  --card: #FFF5F9;
+  --text: #4B1528;
+  --muted: #8A4A63;
+  --border: #F0B3CB;
+  --line: #F4C9DA;
+  --primary: #C2456F;
+  --primary-hover: #A3345A;
+  --gray: #7C5C6E;
+  --gray-hover: #5F4456;
+  --chip: #F9DCE8;
+  --chip-hover: #F4C0D1;
+  --chip-text: #72243E;
+  --done: #B08A9A;
+  --shadow: 0 2px 12px rgba(212, 83, 126, 0.18);
+}
+
+:root[data-theme="light"] .container { border: 2px solid #F9C9DB; }
+
+:root[data-theme="light"] input[type="text"],
+:root[data-theme="light"] input[type="email"],
+:root[data-theme="light"] input[type="password"],
+:root[data-theme="light"] input[type="date"] {
+  background: #fff;
+}
+
+/* Trang trí: chỉ hiện ở chế độ sáng */
+:root[data-theme="light"] .decor {
+  display: block;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+:root[data-theme="light"] .decor svg { position: absolute; }
+.decor .s.w { fill: #fff; }
+.decor .s.y { fill: #FFD66B; }
+
+:root[data-theme="light"] .chick {
+  display: block;
+  position: absolute;
+  top: -52px;
+  left: 50%;
+  width: 64px;
+  height: 64px;
+  margin-left: -32px;
+  pointer-events: none;
+}
+
+/* Màn hình nhỏ: hàng nhân vật nhỏ ở đáy trang */
+:root[data-theme="light"] body { padding-bottom: 96px; }
+
+.decor .bunny   { left: 2%;  bottom: 6px; width: 60px;  height: 60px; }
+.decor .bear    { left: 20%; bottom: 4px; width: 58px;  height: 58px; }
+.decor .cat     { left: 38%; bottom: 6px; width: 58px;  height: 58px; }
+.decor .unicorn { right: 2%; bottom: 2px; width: 100px; height: 80px; }
+
+/* Màn hình rộng: nhân vật lớn hai bên thẻ */
+@media (min-width: 900px) {
+  :root[data-theme="light"] body { padding-bottom: 16px; }
+
+  .decor .bunny   { left: 8px;   bottom: 10px;  width: 80px;  height: 80px; }
+  .decor .bear    { left: 88px;  bottom: 6px;   width: 76px;  height: 76px; }
+  .decor .cat     { left: auto;  right: 60px;   bottom: 130px; width: 80px; height: 80px; }
+  .decor .unicorn { right: 8px;  bottom: 4px;   width: 150px; height: 120px; }
+}
