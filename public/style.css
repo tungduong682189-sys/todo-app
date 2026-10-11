@@ -313,3 +313,107 @@ li .delete:hover { background: var(--danger-hover); }
   .decor .cat     { left: auto;  right: 60px;   bottom: 130px; width: 80px; height: 80px; }
   .decor .unicorn { right: 8px;  bottom: 4px;   width: 150px; height: 120px; }
 }
+
+/* ===== Đêm cú (chế độ tối) ===== */
+
+.night, .owl-top { display: none; }
+
+:root[data-theme="dark"] {
+  --bg: #0A0D18;
+  --card: #161B33;
+  --text: #E6E9FF;
+  --muted: #9AA3C7;
+  --border: #2A3157;
+  --line: #232A4D;
+  --primary: #5A6BEA;
+  --primary-hover: #4A5AD6;
+  --danger-text: #FF8A8A;
+  --gray: #3A4275;
+  --gray-hover: #4B5590;
+  --chip: #232A4D;
+  --chip-hover: #2E3763;
+  --chip-text: #E6E9FF;
+  --done: #6B7499;
+  --shadow: 0 2px 14px rgba(0, 0, 0, 0.6);
+}
+
+:root[data-theme="dark"] .container {
+  border: 1px solid #FFD66B;
+  margin-top: 92px;
+}
+
+:root[data-theme="dark"] input[type="text"],
+:root[data-theme="dark"] input[type="email"],
+:root[data-theme="dark"] input[type="password"],
+:root[data-theme="dark"] input[type="date"] {
+  background: #0F1328;
+}
+
+:root[data-theme="dark"] input[type="checkbox"] { accent-color: #FFD66B; }
+
+/* Cú ngồi trên mép thẻ */
+:root[data-theme="dark"] .owl-top {
+  display: block;
+  position: absolute;
+  top: -70px;
+  left: 50%;
+  width: 76px;
+  height: 76px;
+  margin-left: -38px;
+  pointer-events: none;
+}
+
+/* Lớp trang trí ban đêm */
+:root[data-theme="dark"] .night {
+  display: block;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.night .n { position: absolute; }
+
+.n-moon  { right: 14px; top: 62px; width: 46px; height: 46px; fill: #FFE9A8; }
+.n-ss1   { left: 14px; top: 24px; width: 64px; height: 12px; fill: #fff; transform: rotate(16deg); }
+.n-ss2   { right: 150px; top: 76px; width: 50px; height: 10px; fill: #9FB4FF; transform: rotate(16deg); }
+.n-st    { fill: #fff; }
+
+.n-bat1  { left: 4%;  top: 150px; width: 84px; height: 53px; }
+.n-bat2  { right: 5%; top: 210px; width: 62px; height: 39px; }
+.n-moth  { right: 12%; top: 46%;  width: 46px; height: 37px; }
+.n-ff1   { left: 18%;  bottom: 130px; width: 12px; height: 12px; fill: #FFE58A; }
+.n-ff2   { right: 20%; bottom: 160px; width: 12px; height: 12px; fill: #FFE58A; }
+
+.n-ground { position: absolute; left: 0; right: 0; bottom: 0; height: 20px; background: #121830; }
+.n-rac   { left: 12px;  bottom: 16px; width: 70px; height: 62px; }
+.n-hog   { right: 12px; bottom: 16px; width: 72px; height: 51px; }
+
+/* Màn hình nhỏ: chừa chỗ cho hàng nhân vật ở đáy */
+:root[data-theme="dark"] body { padding-bottom: 96px; }
+
+/* Màn hình rộng: nhân vật lớn hơn */
+@media (min-width: 900px) {
+  :root[data-theme="dark"] body { padding-bottom: 16px; }
+  .n-rac { left: 30px;  width: 108px; height: 96px; }
+  .n-hog { right: 36px; width: 100px; height: 71px; }
+}
+
+/* Chuyển động nhẹ */
+@keyframes twinkle { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+@keyframes bob     { 0%, 100% { translate: 0 0; } 50% { translate: 0 -8px; } }
+@keyframes flutter { 0%, 100% { translate: 0 0; } 25% { translate: 6px -5px; } 50% { translate: -4px -9px; } 75% { translate: -8px -3px; } }
+@keyframes shoot   { 0%, 70% { translate: -30px -8px; opacity: 0; } 75% { opacity: 1; } 100% { translate: 160px 46px; opacity: 0; } }
+
+.n-st   { animation: twinkle 4s ease-in-out infinite; }
+.n-ff1  { animation: twinkle 3s ease-in-out infinite; }
+.n-ff2  { animation: twinkle 4s ease-in-out .8s infinite; }
+.n-bat1 { animation: bob 3.2s ease-in-out infinite; }
+.n-bat2 { animation: bob 4s ease-in-out .6s infinite; }
+.n-moth { animation: flutter 5s ease-in-out infinite; }
+.n-ss1  { animation: shoot 9s linear infinite; }
+.n-ss2  { animation: shoot 12s linear 3s infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .night .n { animation: none !important; }
+}
